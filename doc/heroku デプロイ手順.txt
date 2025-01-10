@@ -1,0 +1,6 @@
+commit後
+git checkout main
+git merge feature-admin-authentication
+git push heroku main
+heroku run php artisan migrate
+heroku run "php artisan db:seed --class=AdminSeeder"
