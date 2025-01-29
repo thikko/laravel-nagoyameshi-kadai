@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Restaurant;
+use App\Models\Category;
 use App\Http\Requests\RestaurantRequest;
 
 class RestaurantController extends Controller
@@ -33,7 +34,8 @@ class RestaurantController extends Controller
 
     public function create()
     {
-        return view('admin.restaurants.create');
+        $categories = Category::all();
+        return view('admin.restaurants.create', compact('categories'));
     }
 
     public function store(RestaurantRequest $request)
@@ -57,12 +59,19 @@ class RestaurantController extends Controller
 
         $restaurant->save();
 
+        $category_ids = array_filter($request->input('category_ids'));
+        $restaurant->categories()->sync($category_ids);
+
         return redirect()->route('admin.restaurants.index')->with('flash_message', '店舗を登録しました。');
     }
 
     public function edit(Restaurant $restaurant)
     {
-        return view('admin.restaurants.edit', compact('restaurant'));
+        // インスタンスに紐づくcategoriesテーブルのすべてのデータをインスタンスのコレクションとして取得する
+        $categories = $restaurant->categories;
+        // 設定されたカテゴリのIDを配列化する
+        $category_ids = $restaurant->categories->pluck('id')->toArray();
+        return view('admin.restaurants.edit', compact('restaurant', 'categories', 'category_ids'));
     }
 
     public function update(RestaurantRequest $request, $id)
@@ -84,6 +93,9 @@ class RestaurantController extends Controller
         $restaurant->closing_time = $request->input('closing_time');
         $restaurant->seating_capacity = $request->input('seating_capacity');
         $restaurant->save();
+        // storeアクションと同様に、HTTPリクエストから取得したcategory_idsパラメータ(カテゴリのID配列)に基づいて、category_restaurantテーブルのデータを同期する
+        $category_ids = array_filter($request->input('category_ids'));
+        $restaurant->categories()->sync($category_ids);
 
         return redirect()->route('admin.restaurants.update', ['restaurant' => $restaurant->id])->with('flash_message', '店舗を編集しました。');
     }

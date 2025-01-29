@@ -18,4 +18,8 @@ class Restaurant extends Model
     {
         return $date->setTimezone(new \DateTimeZone('+09:00'))->format('Y-m-d H:i:s');
     }
+
+    public function categories() {
+        return $this->belongsToMany(Category::class)->withTimestamps();
+    }
 }
