@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Restaurant;
 use App\Models\Category;
+use App\Models\RegularHoliday;
 use App\Http\Requests\RestaurantRequest;
 
 class RestaurantController extends Controller
@@ -34,8 +35,9 @@ class RestaurantController extends Controller
 
     public function create()
     {
+        $regular_holidays = RegularHoliday::all();
         $categories = Category::all();
-        return view('admin.restaurants.create', compact('categories'));
+        return view('admin.restaurants.create', compact('categories', 'regular_holidays'));
     }
 
     public function store(RestaurantRequest $request)
@@ -59,8 +61,12 @@ class RestaurantController extends Controller
 
         $restaurant->save();
 
+        // HTTPリクエストから取得したcategory_idsパラメータ(カテゴリのID配列)に基づいて、category_restaurantテーブルのデータを同期する
         $category_ids = array_filter($request->input('category_ids'));
         $restaurant->categories()->sync($category_ids);
+        // Httpリクエストから取得したregular_holiday_idsパラメータ（定休日のIDの配列）に基づいて、regular_holiday_restaurantテーブルのデータを同期する
+        $regular_holiday_ids = array_filter($request->input('regular_holiday_ids'));
+        $restaurant->regular_holidays()->sync($regular_holiday_ids);
 
         return redirect()->route('admin.restaurants.index')->with('flash_message', '店舗を登録しました。');
     }
@@ -71,7 +77,11 @@ class RestaurantController extends Controller
         $categories = $restaurant->categories;
         // 設定されたカテゴリのIDを配列化する
         $category_ids = $restaurant->categories->pluck('id')->toArray();
-        return view('admin.restaurants.edit', compact('restaurant', 'categories', 'category_ids'));
+
+        // viewに渡す変数に（変数$regular_holidays 内容regular_holidaysテーブルの全てのデータ）を追加する
+        $regular_holidays = RegularHoliday::all();
+
+        return view('admin.restaurants.edit', compact('restaurant', 'categories', 'category_ids', 'regular_holidays'));
     }
 
     public function update(RestaurantRequest $request, $id)
@@ -96,6 +106,10 @@ class RestaurantController extends Controller
         // storeアクションと同様に、HTTPリクエストから取得したcategory_idsパラメータ(カテゴリのID配列)に基づいて、category_restaurantテーブルのデータを同期する
         $category_ids = array_filter($request->input('category_ids'));
         $restaurant->categories()->sync($category_ids);
+
+        // storeアクションと同様に、HTTPリクエストから取得したregular_holiday_idsパラメータ（定休日のIDの配列）に基づいて、regular_holiday_restaurantテーブルのデータを同期する処理を追記
+        $regular_holiday_ids = array_filter($request->input('regular_holiday_ids'));
+        $restaurant->regular_holidays()->sync($regular_holiday_ids);
 
         return redirect()->route('admin.restaurants.update', ['restaurant' => $restaurant->id])->with('flash_message', '店舗を編集しました。');
     }
