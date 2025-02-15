@@ -26,7 +26,7 @@ use App\Http\Controllers\RestaurantController as UserRestaurantController;
 // 管理者としてログインしていない状態でのみアクセス可能にするルーティング
 Route::group(['middleware' => 'guest:admin'], function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
-    Route::resource('restaurants', UserRestaurantController::class)->only(['index']);
+    Route::resource('restaurants', UserRestaurantController::class)->only(['index', 'show']);
 });
 
 // ユーザーのルーティング
