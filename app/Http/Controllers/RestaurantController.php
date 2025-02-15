@@ -37,7 +37,7 @@ class RestaurantController extends Controller
          // 変数$category_idが存在する場合
          if ($category_id) {
             $query->whereHas('categories', function($q) use($category_id){
-                $q->where('id', $category_id);
+                $q->where('categories.id', $category_id);
             });
         }
           // 変数$priceが存在する場合
