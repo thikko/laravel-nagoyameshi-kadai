@@ -9,7 +9,8 @@ use App\Models\Category;
 
 class RestaurantController extends Controller
 {
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         $keyword = $request->keyword;
         $category_id = $request->category_id;
         $price = $request->price;
@@ -54,7 +55,7 @@ class RestaurantController extends Controller
         }
 
         // sortable()メソッドを使って並び替え
-        $restaurants = $query->sotable($sort_query)
+        $restaurants = $query->sortable($sort_query)
         //並べ替えの条件が空ならcreated_at descで並べ替え
                 ->orderBy($sort_query ? null : 'created_at', $sort_query ? null : 'desc')
                 ->paginate(15);
