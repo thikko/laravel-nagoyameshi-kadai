@@ -9,7 +9,8 @@ use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\TermController;
 
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserController as UserUserController;
+use App\Http\Controllers\RestaurantController as UserRestaurantController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,17 +23,20 @@ use App\Http\Controllers\UserController;
 |
 */
 
+// 管理者としてログインしていない状態でのみアクセス可能にするルーティング
 Route::group(['middleware' => 'guest:admin'], function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
-
-    Route::group(['middleware' => ['auth', 'verified']], function () {
-        Route::resource('user',UserController::class)->only(['index', 'edit', 'update']);
-    });  
+    Route::resource('restaurants', RestaurantController::class);
 });
+
+// ユーザーのルーティング
+Route::group(['middleware' => ['auth', 'verified']], function () {
+    Route::resource('user',UserController::class)->only(['index', 'edit', 'update']);
+});  
 
 
 require __DIR__.'/auth.php';
-
+// 管理者専用のルーティング
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth:admin'], function() {
     Route::get('home', [Admin\HomeController::class, 'index'])->name('home');
     Route::resource('/users', Admin\UserController::class)->only(['index', 'show']);
